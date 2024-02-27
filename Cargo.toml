@@ -2424,6 +2424,11 @@ name = "grid"
 path = "examples/ui/grid.rs"
 doc-scrape-examples = true
 
+[[example]]
+name = "grid_bug_maybe"
+path = "examples/ui/grid_bug_maybe.rs"
+doc-scrape-examples = true
+
 [package.metadata.example.grid]
 name = "CSS Grid"
 description = "An example for CSS Grid layout"
