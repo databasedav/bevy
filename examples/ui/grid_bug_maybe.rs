@@ -1,9 +1,22 @@
 //! minimal repro for potential grid layout bug
 use bevy::prelude::*;
 
-const SIDE: f32 = 720.0; // try changing this number too, it's the resulting cell size that's the issue ...
-const SIZE: usize = 13; // or 26, 31, 51, 57, 58, but other stuff is fine ...
-const CELL_SIZE: f32 = SIDE / SIZE as f32;
+const DEFAULT_SIDE: f32 = 720.;  // try changing this number too, it's the resulting cell size that's the issue ...
+const SIDE: Option<&str> = option_env!("SIDE");
+const DEFAULT_SIZE: usize = 13;  // or 26, 31, 51, 57, 58, but other stuff is fine ...
+const SIZE: Option<&str> = option_env!("SIZE");
+
+fn side() -> f32 {
+    SIDE.and_then(|side| side.parse().ok()).unwrap_or(DEFAULT_SIDE)
+}
+
+fn size() -> usize {
+    SIZE.and_then(|size| size.parse().ok()).unwrap_or(DEFAULT_SIZE)
+}
+
+fn cell_size() -> f32 {
+    side() / size() as f32
+}
 
 fn main() {
     App::new()
@@ -39,17 +52,17 @@ fn spawn_layout(mut commands: Commands) {
                         display: Display::Grid,
                         grid_template_columns: RepeatedGridTrack::px(
                             GridTrackRepetition::AutoFill,
-                            CELL_SIZE,
+                            cell_size(),
                         ),
-                        width: Val::Px(SIDE),
-                        height: Val::Px(SIDE),
+                        width: Val::Px(side()),
+                        height: Val::Px(side()),
                         ..default()
                     },
                     ..default()
                 })
                 .with_children(|builder| {
-                    for i in 0..SIZE {
-                        for j in 0..SIZE {
+                    for i in 0..size() {
+                        for j in 0..size() {
                             item_rect(builder, i, j);
                         }
                     }
@@ -63,8 +76,8 @@ fn item_rect(builder: &mut ChildBuilder, i: usize, j: usize) {
             style: Style {
                 display: Display::Grid,
                 padding: UiRect::all(Val::Px(1.)),
-                width: Val::Px(CELL_SIZE),
-                height: Val::Px(CELL_SIZE),
+                width: Val::Px(cell_size()),
+                height: Val::Px(cell_size()),
                 ..default()
             },
             background_color: BackgroundColor(Color::BLACK),
@@ -80,7 +93,7 @@ fn item_rect(builder: &mut ChildBuilder, i: usize, j: usize) {
                     builder.spawn(TextBundle::from_section(
                         format!("{},{}", i, j),
                         TextStyle {
-                            font_size: 14.,
+                            font_size: 14. * 14. / size() as f32,
                             color: Color::WHITE,
                             ..default()
                         },
